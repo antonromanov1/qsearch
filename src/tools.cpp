@@ -10,8 +10,10 @@
 #include <functional>
 #include <regex>
 #include <iterator>
+#include <stdexcept>
 #include "tools.h"
-#include "document.h"
+#include "Document.h"
+#include "Node.h"
 #include "thread_queue.h"
 
 struct struct_string {
@@ -55,7 +57,6 @@ std::string gethtml(const std::string& url)
     CURL *curl;
     //CURLcode res;
     struct struct_string s;
-    std::string f;
 
     curl = curl_easy_init();
 
@@ -73,7 +74,7 @@ std::string gethtml(const std::string& url)
         curl_easy_cleanup(curl);
     }
 
-    f = std::string(s.ptr);
+    std::string f(s.ptr);
     free(s.ptr);
 
     return f;
@@ -143,9 +144,19 @@ std::string getUrl(std::string& url, std::vector<std::string>& base_links,
     }
 
     std::string html = gethtml(url);
-    Document doc(html);
-    std::string title(doc.title());
-    std::vector<std::string> links = doc.links();
+    CDocument doc;
+    doc.parse(html.c_str());
+    CSelection c = doc.find("title");
+    std::string title;
+
+    try {
+        title = c.nodeAt(0).text();
+    }
+    catch (const std::out_of_range& ex) {
+        title = "<<<Has not title>>>";
+    }
+
+    std::vector<std::string> links = doc.get_links();
 
     srand(time(0));
     if (title.size() == 0)
@@ -222,7 +233,7 @@ void provider(Thread_queue<std::vector<std::string>>& queue) {
         // std::cout << "ID: " << id << "; URL:" << url << std::endl;
         urls_all.push_back(url);
         if ((url = getUrl(url, base_urls, queue) ) == "Error")
-            throw std::runtime_error("error in thread_func() call");
+            throw std::runtime_error("error in provider() call");
 
         id++;
         if (isInCycle(urls_all)) {
