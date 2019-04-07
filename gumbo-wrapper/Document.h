@@ -22,6 +22,7 @@
 #include "Selection.h"
 
 void search_for_links(GumboNode*, std::vector<std::string>&);
+std::string str_join(std::vector<std::string>&);
 
 class CDocument: public CObject
 {
@@ -35,7 +36,9 @@ class CDocument: public CObject
 
 		CSelection find(std::string aSelector);
 
-		std::vector<std::string> get_links() const;
+		std::vector<std::string> get_links();
+
+		std::string page_text();
 
 	private:
 

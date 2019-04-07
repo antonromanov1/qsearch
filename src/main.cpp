@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
                 delete threads[i];
             }
         }
+
         else if (strcmp(argv[1], "read") == 0){
             unsigned int number = 500;
             std::cout << "Output of the first " << number << " crawled pages" << std::endl;

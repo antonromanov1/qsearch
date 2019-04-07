@@ -156,6 +156,8 @@ std::string getUrl(std::string& url, std::vector<std::string>& base_links,
         title = "<<<Has not title>>>";
     }
 
+    std::string page_text(doc.page_text());
+
     std::vector<std::string> links = doc.get_links();
 
     srand(time(0));
@@ -183,6 +185,7 @@ std::string getUrl(std::string& url, std::vector<std::string>& base_links,
     std::vector<std::string> vec;
     vec.push_back(url);
     vec.push_back(title);
+    vec.push_back(page_text);
 
     queue.push(vec);
 
@@ -255,9 +258,26 @@ void receiver(Thread_queue<std::vector<std::string>>& queue, std::string& file_n
             std::vector<std::string> vec(queue.front());
             queue.pop();
 
-            std::string url(vec[0]);
-            std::string title(vec[1]);
+            size_t length;
+            size_t* buffer;
+            char* buffer2;
 
+            for (std::string x : vec) { // vec has exactly 3 elements
+                length = (size_t) x.size();
+                buffer = &length;
+                if (fwrite(buffer, sizeof(size_t), 1, ptr_f) != 1) {
+                    std::cout << strerror(errno) << std::endl;
+                }
+
+                buffer2 = new char [length + 1];
+                strcpy(buffer2, x.c_str());
+                if (fwrite(buffer2, sizeof(char), length, ptr_f) != length) {
+                    std::cout << strerror(errno) << std::endl;
+                }
+                delete buffer2;
+            }
+
+            /*
             // writing url
             size_t length = (size_t)(url.size());
             size_t* buffer = &length;
@@ -285,6 +305,7 @@ void receiver(Thread_queue<std::vector<std::string>>& queue, std::string& file_n
                 std::cout << strerror(errno) << std::endl;
             }
             delete buffer2;
+            */
         }
     }
 

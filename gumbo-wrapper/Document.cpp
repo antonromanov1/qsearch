@@ -62,7 +62,7 @@ CSelection CDocument::find(std::string aSelector)
 	return sel.find(aSelector);
 }
 
-std::vector<std::string> CDocument::get_links() const
+std::vector<std::string> CDocument::get_links()
 {
 	if (mpOutput == NULL)
 	{
@@ -72,6 +72,34 @@ std::vector<std::string> CDocument::get_links() const
 	std::vector<std::string> vec;
 	search_for_links(mpOutput->root, vec);
 	return vec;
+}
+
+std::string str_join(std::vector<std::string>& vec) {
+    std::string str;
+
+    for (auto x : vec) {
+        std::string var;
+
+        for (auto y : x)
+            var += y;
+
+        str += var;
+    }
+
+    return str;
+}
+
+std::string CDocument::page_text()
+{
+	std::string text;
+
+	const char* tags[] = {"h1", "h2", "h3", "h4", "h5", "h6", "p", "span", "figcaption"};
+	for (const char* x : tags) {
+	    CSelection selec = this->find(x);
+        std::vector<std::string> data_h1(selec.results());
+        text += str_join(data_h1);
+	}
+	return text;
 }
 
 void CDocument::reset()
