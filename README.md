@@ -11,3 +11,4 @@ Changes I made are below:
    2. Added member function CDocument::get_links
    3. Edited destructor of CObject and member function CObject::release
    4. Added member function CSelection::results
+   5. Added member function CDocument::page_text
