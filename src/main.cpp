@@ -13,14 +13,16 @@
 
 int main(int argc, char *argv[])
 {
+    std::string file_name = "data.bin";
+
     if (argc == 1)
         std::cout << "If you want to crawl the Internet add argument \"crawl\"" <<
             std::endl << "if you want to read crawled data add argument \"read\"" << std::endl;
+
     else if (argc == 2){
         if (strcmp(argv[1], "crawl") == 0){
             Thread_queue<std::vector<std::string>> queue;
 
-            std::string file_name = "data.bin";
             const unsigned char NUMBER = 1;
             std::thread* threads[NUMBER];
 
@@ -37,9 +39,9 @@ int main(int argc, char *argv[])
         }
 
         else if (strcmp(argv[1], "read") == 0){
-            unsigned int number = 500;
+            unsigned int number = 10;
             std::cout << "Output of the first " << number << " crawled pages" << std::endl;
-            readbin(number);
+            readbin(file_name);
         }
     }
     else

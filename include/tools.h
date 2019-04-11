@@ -13,7 +13,7 @@ bool isInCycle(std::vector<std::string>&);
 
 std::string getUrl(std::string&, std::vector<std::string>&, Thread_queue<std::vector<std::string>>& );
 
-int readbin(unsigned int);
+int readbin(std::string&);
 
 void provider(Thread_queue<std::vector<std::string>>&);
 void receiver(Thread_queue<std::vector<std::string>>&, std::string&);

@@ -78,10 +78,10 @@ std::string str_join(std::vector<std::string>& vec) {
     std::string str;
 
     for (auto x : vec) {
-		str += x;
+		str += x + " ";
     }
 
-    return str;
+    return str.substr(0, str.size() - 1);
 }
 
 std::string CDocument::page_text()
@@ -92,9 +92,10 @@ std::string CDocument::page_text()
 	for (const char* x : tags) {
 	    CSelection selec = this->find(x);
         std::vector<std::string> data_h1(selec.results());
-        text += str_join(data_h1);
+        text += str_join(data_h1) + " ";
 	}
-	return text;
+
+	return text.substr(0, text.size() - 1);
 }
 
 void CDocument::reset()

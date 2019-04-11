@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstddef>
 #include <ctime>
+#include <sys/stat.h>
 #include <curl/curl.h>
 #include <iostream>
 #include <string>
@@ -137,7 +138,7 @@ std::string getUrl(std::string& url, std::vector<std::string>& base_links,
      * gets html, parses it, if links > enoughNumber pushes at the end of base_links current URL
      * writes (id, length of title, title, length of links, length of link0, link0, ...) at the end of the file
      */
-    if ( (url.size() < 10) ||  (url[0] != 'h') || (url[1] != 't') || (url[2] != 't') ) {
+    if ( (url.size() < 10) || (url.substr(0, 4) != "http") ) {
         std::cout << "Not a URL" << std::endl;
         srand(time(0));
         url = base_links[rand() % base_links.size()];
@@ -192,31 +193,43 @@ std::string getUrl(std::string& url, std::vector<std::string>& base_links,
     return res;
 }
 
-int readbin(unsigned int number)
+int readbin(std::string& file_name)
 {
-    FILE *ptr_f = fopen("data.bin", "rb");
-    if (!ptr_f){
+    FILE *fp = fopen(file_name.c_str(), "rb");
+    if (!fp){
         std::cout << strerror(errno) << std::endl;
         return -1;
     }
 
+    struct stat stat_buf;
+    int fd = fileno(fp);
+    fstat(fd, &stat_buf);
+    unsigned long int length = stat_buf.st_size;
+    unsigned long int i = 0;
+
     size_t len;
     char*  buffer;
     
-    for (unsigned int i = 0; i != number * 2; i++){
+    while (i < length + 1) {
 
-        if (fread(&len, sizeof(size_t), 1, ptr_f) != 1)
+        if (fread(&len, sizeof(size_t), 1, fp) != 1) {
             std::cout << strerror(errno) << std::endl;
+        }
+        i += sizeof(size_t);
 
         buffer = new char [len];
-        if (fread(buffer, sizeof(char), len, ptr_f) != len)
+
+        if (fread(buffer, sizeof(char), len, fp) != len) {
             std::cout << strerror(errno) << std::endl;
+        }
+        i += sizeof(char) * len;
 
         std::cout << buffer << std::endl;
+
         delete buffer;
     }
 
-    fclose(ptr_f);
+    fclose(fp);
     return 0;
 }
 
@@ -277,35 +290,6 @@ void receiver(Thread_queue<std::vector<std::string>>& queue, std::string& file_n
                 delete buffer2;
             }
 
-            /*
-            // writing url
-            size_t length = (size_t)(url.size());
-            size_t* buffer = &length;
-            if (fwrite(buffer, sizeof(size_t), 1, ptr_f) != 1) {
-                std::cout << strerror(errno) << std::endl;
-            }
-
-            char* buffer2 = new char [length + 1];
-            strcpy(buffer2, url.c_str());
-            if (fwrite(buffer2, sizeof(char), length, ptr_f) != length) {
-                std::cout << strerror(errno) << std::endl;
-            }
-            delete buffer2;
-
-            // writing title
-            length = (size_t)(title.size());
-            buffer = &length;
-            if (fwrite(buffer, sizeof(size_t), 1, ptr_f) != 1) {
-                std::cout << strerror(errno) << std::endl;
-            }
-
-            buffer2 = new char [length + 1];
-            strcpy(buffer2, title.c_str());
-            if (fwrite(buffer2, sizeof(char), length, ptr_f) != length) {
-                std::cout << strerror(errno) << std::endl;
-            }
-            delete buffer2;
-            */
         }
     }
 
