@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
             Thread_queue<std::vector<std::string>> queue;
 
             std::string file_name = "data.bin";
-            const unsigned char NUMBER = 10;
+            const unsigned char NUMBER = 1;
             std::thread* threads[NUMBER];
 
             for (unsigned char i = 0; i < NUMBER; ++i) {

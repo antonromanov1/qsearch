@@ -78,12 +78,15 @@ std::string str_join(std::vector<std::string>& vec) {
     std::string str;
 
     for (auto x : vec) {
+		/*
         std::string var;
 
         for (auto y : x)
             var += y;
 
         str += var;
+		*/
+		str += x;
     }
 
     return str;
