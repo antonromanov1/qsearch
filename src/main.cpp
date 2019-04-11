@@ -39,8 +39,7 @@ int main(int argc, char *argv[])
         }
 
         else if (strcmp(argv[1], "read") == 0){
-            unsigned int number = 10;
-            std::cout << "Output of the first " << number << " crawled pages" << std::endl;
+            std::cout << "Content of data.bin:" << std::endl;
             readbin(file_name);
         }
     }
