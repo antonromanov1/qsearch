@@ -55,6 +55,7 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct struct_string *s)
 
 std::string gethtml(const std::string& url)
 {
+    long expected_code = 200;
     CURL *curl;
     //CURLcode res;
     struct struct_string s;
@@ -68,12 +69,17 @@ std::string gethtml(const std::string& url)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
         CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK)
-            return "curl_error";
-            // fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res) );
 
-        /* always cleanup */
-        curl_easy_cleanup(curl);
+        if (res == CURLE_OK) {
+            long response_code;
+            curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+            if (response_code != expected_code)
+                return "curl_error";
+        }
+        else if (res != CURLE_OK)
+            return "curl_error";
+
+        curl_easy_cleanup(curl); /* always cleanup */
     }
     else
         return "curl_error";
@@ -84,7 +90,7 @@ std::string gethtml(const std::string& url)
     return f;
 }
 
-std::string getDomain(const std::string& url)
+std::string get_domain(const std::string& url)
 {
     std::string prot = url.substr(0, 5);
     const char *urlStr = url.c_str();
@@ -104,17 +110,17 @@ std::string getDomain(const std::string& url)
         throw std::bad_function_call();
 }
 
-bool isDoEqual(std::vector<std::string>& v)
+bool are_do_equal(std::vector<std::string>& v)
 {
     if (v.size() <= 1)
         return true;
     for (auto iter = v.begin() + 1; iter != v.end(); iter++)
-        if (getDomain(*iter) != getDomain(*(iter - 1) ) )
+        if (get_domain(*iter) != get_domain(*(iter - 1) ) )
             return false;
     return true;
 }
 
-bool isInCycle(std::vector<std::string>& urls)
+bool is_in_cycle(std::vector<std::string>& urls)
 {
     const int num = 20;
     auto sz = urls.size();
@@ -123,7 +129,7 @@ bool isInCycle(std::vector<std::string>& urls)
         return false;
     else if (sz > num) {
         std::vector<std::string> lastUrls(urls.end() - num, urls.end() );
-        if (isDoEqual(lastUrls))
+        if (are_do_equal(lastUrls))
             return true;
         else
             return false;
@@ -132,15 +138,15 @@ bool isInCycle(std::vector<std::string>& urls)
         return false;
 }
 
-const unsigned short enoughNumber = 50;
-
 std::string getUrl(std::string& url, std::vector<std::string>& base_links,
                    Thread_queue<std::vector<std::string>>& queue)
 {
     /*
      * gets html, parses it, if links > enoughNumber pushes at the end of base_links current URL
-     * writes (id, length of title, title, length of links, length of link0, link0, ...) at the end of the file
+     * writes data to queue
      */
+
+    const unsigned short enoughNumber = 50;
     if ( (url.size() < 10) || (url.substr(0, 4) != "http") ) {
         std::cout << "Not a URL" << std::endl;
         srand(time(0));
@@ -255,7 +261,7 @@ void provider(Thread_queue<std::vector<std::string>>& queue) {
             throw std::runtime_error("error in provider() call");
 
         id++;
-        if (isInCycle(urls_all)) {
+        if (is_in_cycle(urls_all)) {
             // std::cout << "In cycle" << std::endl;
             srand(time(0));
             url = base_urls[rand() % base_urls.size()];

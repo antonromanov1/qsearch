@@ -11,23 +11,10 @@ private:
     std::queue<T> _elements;
 
 public:
-    T front() {
-        std::lock_guard<std::recursive_mutex> locker(_lock);
-        return _elements.front();
-    }
-
-    void push(T& arg) {
-        std::lock_guard<std::recursive_mutex> locker(_lock);
-        _elements.push(arg);
-    }
-
-    void pop() {
-        std::lock_guard<std::recursive_mutex> locker(_lock);
-        _elements.pop();
-    }
-
-    bool not_empty() {
-        std::lock_guard<std::recursive_mutex> locker(_lock);
-        return !(_elements.empty());
-    }
+    T front();
+    void push(T&);
+    void pop();
+    bool not_empty();
 };
+
+#include "thread_queue.hpp"

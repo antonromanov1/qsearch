@@ -7,9 +7,9 @@
 
 std::string gethtml(const std::string&);
 
-std::string getDomain(const std::string&);
-bool isDoEqual(std::vector<std::string>&);
-bool isInCycle(std::vector<std::string>&);
+std::string get_domain(const std::string&);
+bool are_do_equal(std::vector<std::string>&);
+bool is_in_cycle(std::vector<std::string>&);
 
 std::string getUrl(std::string&, std::vector<std::string>&, Thread_queue<std::vector<std::string>>& );
 
