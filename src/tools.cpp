@@ -69,11 +69,14 @@ std::string gethtml(const std::string& url)
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK)
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res) );
+            return "curl_error";
+            // fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res) );
 
         /* always cleanup */
         curl_easy_cleanup(curl);
     }
+    else
+        return "curl_error";
 
     std::string f(s.ptr);
     free(s.ptr);

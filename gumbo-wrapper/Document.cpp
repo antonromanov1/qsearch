@@ -103,8 +103,8 @@ std::string CDocument::page_text()
 
 	for (const char* x : tags) {
 	    CSelection selec = this->find(x);
-		std::vector<std::string> data_h1(selec.results());
-		text += str_join(data_h1) + " ";
+	    std::vector<std::string> data_h1(selec.results());
+	    text += str_join(data_h1) + " ";
 	}
 
 	return text.substr(0, text.size() - 1);
