@@ -88,7 +88,18 @@ std::string CDocument::page_text()
 {
 	std::string text;
 
-	const char* tags[] = {"h1", "h2", "h3", "h4", "h5", "h6", "p", "span", "figcaption"};
+	const char h1[] = "h1";
+	const char h2[] = "h2";
+	const char h3[] = "h3";
+	const char h4[] = "h4";
+	const char h5[] = "h5";
+	const char h6[] = "h6";
+	
+	const char p[] = "p";
+	const char span[] = "span";
+	const char figcaption[] = "figcaption";
+	const char* tags[] = {h1, h2, h3, h4, h5, h6, p, span, figcaption};
+
 	for (const char* x : tags) {
 	    CSelection selec = this->find(x);
         std::vector<std::string> data_h1(selec.results());
