@@ -88,6 +88,7 @@ std::string CDocument::page_text()
 {
 	std::string text;
 
+	// this code locates characters below on call stack
 	const char h1[] = "h1";
 	const char h2[] = "h2";
 	const char h3[] = "h3";
@@ -102,8 +103,8 @@ std::string CDocument::page_text()
 
 	for (const char* x : tags) {
 	    CSelection selec = this->find(x);
-        std::vector<std::string> data_h1(selec.results());
-        text += str_join(data_h1) + " ";
+		std::vector<std::string> data_h1(selec.results());
+		text += str_join(data_h1) + " ";
 	}
 
 	return text.substr(0, text.size() - 1);
