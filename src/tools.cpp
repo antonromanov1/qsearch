@@ -56,6 +56,7 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct struct_string *s)
 std::string gethtml(const std::string& url)
 {
     long expected_code = 200;
+    std::string message("curl_error");
     CURL *curl;
     //CURLcode res;
     struct struct_string s;
@@ -74,15 +75,15 @@ std::string gethtml(const std::string& url)
             long response_code;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
             if (response_code != expected_code)
-                return "curl_error";
+                return message;
         }
         else if (res != CURLE_OK)
-            return "curl_error";
+            return message;
 
         curl_easy_cleanup(curl); /* always cleanup */
     }
     else
-        return "curl_error";
+        return message;
 
     std::string f(s.ptr);
     free(s.ptr);
@@ -122,20 +123,19 @@ bool are_do_equal(std::vector<std::string>& v)
 
 bool is_in_cycle(std::vector<std::string>& urls)
 {
-    const int num = 20;
-    auto sz = urls.size();
+    std::string domen;
 
-    if (sz < num)
+    if (urls.size() == 0)
         return false;
-    else if (sz > num) {
-        std::vector<std::string> lastUrls(urls.end() - num, urls.end() );
-        if (are_do_equal(lastUrls))
-            return true;
-        else
-            return false;
+    else {
+        domen = get_domain(urls[0]);
+
+        for (auto iter = urls.begin() + 1; iter != urls.end(); ++iter)
+            if (get_domain(*iter) != domen)
+                return false;
     }
-    else
-        return false;
+
+    return true;
 }
 
 std::string getUrl(std::string& url, std::vector<std::string>& base_links,
@@ -242,34 +242,111 @@ int readbin(std::string& file_name)
     return 0;
 }
 
-void provider(Thread_queue<std::vector<std::string>>& queue) {
-    std::vector<std::string> base_urls;
-    base_urls.push_back("https://en.wikipedia.org/wiki/Difference_engine");
-    base_urls.push_back("https://www.gnu.org/home.en.html");
-    base_urls.push_back("https://www.nytimes.com/");
-    base_urls.push_back("https://www.wsj.com/europe");
+std::vector<std::string> parse(std::string& url, std::string& html) {
+    CDocument doc;
+    doc.parse(html.c_str());
+    std::vector<std::string> links = doc.get_links();
 
-    std::vector<std::string> urls_all;
+    CSelection c = doc.find("title");
+    std::string title;
+    try {
+        title = c.nodeAt(0).text();
+    }
+    catch (const std::out_of_range& ex) {
+        title = "<<<Has not title>>>";
+    }
+    std::string page_text(doc.page_text());
 
-    srand(std::time(0));
-    std::string url = base_urls[rand() % base_urls.size()];
-    unsigned long id = 1;
-    for(;;){
-        // std::cout << "ID: " << id << "; URL:" << url << std::endl;
-        urls_all.push_back(url);
-        if ((url = getUrl(url, base_urls, queue) ) == "Error")
-            throw std::runtime_error("error in provider() call");
+    std::vector<std::string> vec;
+    vec.push_back(url);
+    vec.push_back(title);
+    vec.push_back(page_text);
 
-        id++;
-        if (is_in_cycle(urls_all)) {
-            // std::cout << "In cycle" << std::endl;
-            srand(time(0));
-            url = base_urls[rand() % base_urls.size()];
+    return vec;
+}
+
+void provide(Thread_queue<std::vector<std::string>>& queue) {
+    std::vector<std::string> base_links;
+    base_links.push_back("https://www.theguardian.com/international");
+    base_links.push_back("https://www.nbcnews.com/");
+    base_links.push_back("https://www.allrecipes.com/");
+    base_links.push_back("https://en.wikipedia.org/wiki/Difference_engine");
+
+    std::vector<std::string> vector_of_links;
+
+    srand(time(NULL));
+    std::string url = base_links[rand() % base_links.size()];
+    std::string home_url = url;
+    std::cout << "Fetching " << url << "..." << std::endl;
+
+    std::string html(gethtml(url));
+    CDocument doc_1;
+    doc_1.parse(html.c_str());
+    std::vector<std::string> links(doc_1.get_links());
+    std::vector<std::string> vec(parse(url, html));
+    queue.push(vec);
+
+    for (;;) {
+        std::cout << std::endl;
+        vector_of_links.push_back(url);
+
+        url = links[rand() % links.size()];
+
+        if (url.substr(0, 4) != "http")
+            url = home_url + url;
+
+        std::cout << "Fetching " << url << std::endl;
+
+        html = gethtml(url);
+        if (html != "curl_error") {
+            vec = parse(url, html);
         }
+        else {
+            std::cout << "----------------Exception------------" << std::endl;
+            url = base_links[rand() % base_links.size()];
+            html = gethtml(url);
+            vec = parse(url, html);
+            queue.push(vec);
+        }
+
+        CDocument doc;
+        doc.parse(html.c_str());
+        links = doc.get_links();
+
+        if (links.size() == 0) {
+            url = base_links[rand() % base_links.size()];
+            html = gethtml(url);
+            CDocument doc2;
+            doc2.parse(html.c_str());
+            links = doc2.get_links();
+            vec = parse(url, html);
+            queue.push(vec);
+        }
+        else
+            ;
+
+        // If the crawler got in a cycle
+        if (vector_of_links.size() > 5) {
+            std::vector<std::string> last_links;
+
+            for (int i = 0; i < 5; ++i)
+                last_links.push_back(vector_of_links[vector_of_links.size() - (-i + 5)]);
+
+            if (is_in_cycle(last_links)) {
+                std::cout << "--------------Got in a cycle----------------" << std::endl;
+                url = base_links[rand() % base_links.size()];
+                html = gethtml(url);
+                vec = parse(url, html);
+                queue.push(vec);
+            }
+
+        }
+
+        home_url = url;
     }
 }
 
-void receiver(Thread_queue<std::vector<std::string>>& queue, std::string& file_name) {
+void receive(Thread_queue<std::vector<std::string>>& queue, std::string& file_name) {
     FILE * ptr_f = fopen(file_name.c_str(), "wb");
     if (!ptr_f) {
         std::cout << strerror(errno) << std::endl;

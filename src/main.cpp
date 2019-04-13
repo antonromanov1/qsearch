@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
             std::thread* threads[NUMBER];
 
             for (unsigned char i = 0; i < NUMBER; ++i) {
-                threads[i] = new std::thread(provider, std::ref(queue));
+                threads[i] = new std::thread(provide, std::ref(queue));
             }
-            std::thread thr(receiver, std::ref(queue), std::ref(file_name));
+            std::thread thr(receive, std::ref(queue), std::ref(file_name));
 
             thr.join();
             for (unsigned char i = 0; i < NUMBER; ++i) {

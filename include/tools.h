@@ -15,5 +15,6 @@ std::string getUrl(std::string&, std::vector<std::string>&, Thread_queue<std::ve
 
 int readbin(std::string&);
 
-void provider(Thread_queue<std::vector<std::string>>&);
-void receiver(Thread_queue<std::vector<std::string>>&, std::string&);
+std::vector<std::string> parse(std::string&, std::string&);
+void provide(Thread_queue<std::vector<std::string>>&);
+void receive(Thread_queue<std::vector<std::string>>&, std::string&);
