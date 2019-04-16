@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
     else if (argc == 2){
         if (strcmp(argv[1], "crawl") == 0){
-            Thread_queue<std::vector<std::string>> queue;
+            Thread_queue<Page> queue;
 
             const unsigned char NUMBER = 1;
             std::thread* threads[NUMBER];

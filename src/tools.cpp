@@ -55,7 +55,7 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct struct_string *s)
 
 std::string gethtml(const std::string& url)
 {
-    long expected_code = 200;
+    long expected_code = 200.0;
     std::string message("curl_error");
     CURL *curl;
     //CURLcode res;
@@ -138,70 +138,6 @@ bool is_in_cycle(std::vector<std::string>& urls)
     return true;
 }
 
-std::string getUrl(std::string& url, std::vector<std::string>& base_links,
-                   Thread_queue<std::vector<std::string>>& queue)
-{
-    /*
-     * gets html, parses it, if links > enoughNumber pushes at the end of base_links current URL
-     * writes data to queue
-     */
-
-    const unsigned short enoughNumber = 50;
-    if ( (url.size() < 10) || (url.substr(0, 4) != "http") ) {
-        std::cout << "Not a URL" << std::endl;
-        srand(time(0));
-        url = base_links[rand() % base_links.size()];
-    }
-
-    std::string html = gethtml(url);
-    CDocument doc;
-    doc.parse(html.c_str());
-    CSelection c = doc.find("title");
-    std::string title;
-
-    try {
-        title = c.nodeAt(0).text();
-    }
-    catch (const std::out_of_range& ex) {
-        title = "<<<Has not title>>>";
-    }
-
-    std::string page_text(doc.page_text());
-
-    std::vector<std::string> links = doc.get_links();
-
-    srand(time(0));
-    if (title.size() == 0)
-        return base_links[rand() % base_links.size()];
-
-    if (links.size() > enoughNumber)
-        base_links.push_back(url);
-
-    srand(time(0));
-    std::string res;
-    std::string rstr;
-    if (links.size() == 0){
-        std::cout << "No links found, URL:" << url << std::endl;
-        return base_links[rand() % base_links.size()];
-    }
-    else {
-        rstr = links[rand() % links.size()];
-        if (rstr.substr(0, 4) != "http")
-            res = url + rstr;
-        else
-            res = url;
-    }
-
-    std::vector<std::string> vec;
-    vec.push_back(url);
-    vec.push_back(title);
-    vec.push_back(page_text);
-
-    queue.push(vec);
-
-    return res;
-}
-
 int readbin(std::string& file_name)
 {
     FILE *fp = fopen(file_name.c_str(), "rb");
@@ -242,7 +178,7 @@ int readbin(std::string& file_name)
     return 0;
 }
 
-std::vector<std::string> parse(std::string& url, std::string& html) {
+Page parse(std::string& url, std::string& html) {
     CDocument doc;
     doc.parse(html.c_str());
     std::vector<std::string> links = doc.get_links();
@@ -257,34 +193,31 @@ std::vector<std::string> parse(std::string& url, std::string& html) {
     }
     std::string page_text(doc.page_text());
 
-    std::vector<std::string> vec;
-    vec.push_back(url);
-    vec.push_back(title);
-    vec.push_back(page_text);
+    Page page  = { .url = url, .title = title, .text = page_text};
 
-    return vec;
+    return page;
 }
 
-void provide(Thread_queue<std::vector<std::string>>& queue) {
+void provide(Thread_queue<Page>& queue) {
     std::vector<std::string> base_links;
     base_links.push_back("https://www.theguardian.com/international");
     base_links.push_back("https://www.nbcnews.com/");
     base_links.push_back("https://www.allrecipes.com/");
-    base_links.push_back("https://en.wikipedia.org/wiki/Difference_engine");
+    base_links.push_back("https://en.wikipedia.org/wiki/Main_Page");
 
     std::vector<std::string> vector_of_links;
 
     srand(time(NULL));
     std::string url = base_links[rand() % base_links.size()];
     std::string home_url = url;
-    std::cout << "Fetching " << url << "..." << std::endl;
+    std::cout << "Fetching " << url << std::endl;
 
     std::string html(gethtml(url));
     CDocument doc_1;
     doc_1.parse(html.c_str());
     std::vector<std::string> links(doc_1.get_links());
-    std::vector<std::string> vec(parse(url, html));
-    queue.push(vec);
+    Page page = parse(url, html);
+    queue.push(page);
 
     for (;;) {
         std::cout << std::endl;
@@ -299,14 +232,14 @@ void provide(Thread_queue<std::vector<std::string>>& queue) {
 
         html = gethtml(url);
         if (html != "curl_error") {
-            vec = parse(url, html);
+            page = parse(url, html);
         }
         else {
             std::cout << "----------------Exception------------" << std::endl;
             url = base_links[rand() % base_links.size()];
             html = gethtml(url);
-            vec = parse(url, html);
-            queue.push(vec);
+            page = parse(url, html);
+            queue.push(page);
         }
 
         CDocument doc;
@@ -319,8 +252,8 @@ void provide(Thread_queue<std::vector<std::string>>& queue) {
             CDocument doc2;
             doc2.parse(html.c_str());
             links = doc2.get_links();
-            vec = parse(url, html);
-            queue.push(vec);
+            page = parse(url, html);
+            queue.push(page);
         }
         else
             ;
@@ -336,8 +269,8 @@ void provide(Thread_queue<std::vector<std::string>>& queue) {
                 std::cout << "--------------Got in a cycle----------------" << std::endl;
                 url = base_links[rand() % base_links.size()];
                 html = gethtml(url);
-                vec = parse(url, html);
-                queue.push(vec);
+                page = parse(url, html);
+                queue.push(page);
             }
 
         }
@@ -346,38 +279,42 @@ void provide(Thread_queue<std::vector<std::string>>& queue) {
     }
 }
 
-void receive(Thread_queue<std::vector<std::string>>& queue, std::string& file_name) {
+size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
+    size_t result = 0;
+    size_t length;
+    size_t* size_buffer;
+    char* str_buffer;
+
+    length = (size_t) str_to_disk.size();
+    size_buffer = &length;
+    result += fwrite(size_buffer, sizeof(size_t), 1, fp);
+
+    str_buffer = new char [length + 1];
+    strcpy(str_buffer, str_to_disk.c_str());
+    result += fwrite(str_buffer, sizeof(char), length, fp);
+    delete str_buffer;
+
+    return result;
+}
+
+void receive(Thread_queue<Page>& queue, std::string& file_name) {
     FILE * ptr_f = fopen(file_name.c_str(), "wb");
     if (!ptr_f) {
         std::cout << strerror(errno) << std::endl;
     }
 
-    for (;;) {
+    for (;;)
         if (queue.not_empty()) {
-            std::vector<std::string> vec(queue.front());
+            Page page(queue.front());
             queue.pop();
 
-            size_t length;
-            size_t* buffer;
-            char* buffer2;
-
-            for (std::string x : vec) { // vec has exactly 3 elements
-                length = (size_t) x.size();
-                buffer = &length;
-                if (fwrite(buffer, sizeof(size_t), 1, ptr_f) != 1) {
-                    std::cout << strerror(errno) << std::endl;
-                }
-
-                buffer2 = new char [length + 1];
-                strcpy(buffer2, x.c_str());
-                if (fwrite(buffer2, sizeof(char), length, ptr_f) != length) {
-                    std::cout << strerror(errno) << std::endl;
-                }
-                delete buffer2;
-            }
-
+            if (fwrite_str(page.url, ptr_f) != 1 + page.url.size())
+                perror("");
+            if (fwrite_str(page.title, ptr_f) != 1 + page.title.size())
+                perror("");
+            if (fwrite_str(page.text, ptr_f) != 1 + page.text.size())
+                perror("");
         }
-    }
 
     fclose(ptr_f);
 }
