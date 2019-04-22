@@ -8,12 +8,13 @@
 #include <stdexcept>
 #include <thread>
 #include <functional>
-#include "tools.h"
+#include "crawling.h"
 #include "thread_queue.h"
+#include "handling_primary.h"
 
 int main(int argc, char *argv[])
 {
-    std::string file_name = "data.bin";
+    std::string file_name_primary_data = "data.bin";
 
     if (argc == 1)
         std::cout << "If you want to crawl the Internet add argument \"crawl\"" <<
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
             for (unsigned char i = 0; i < NUMBER; ++i) {
                 threads[i] = new std::thread(provide, std::ref(queue));
             }
-            std::thread thr(receive, std::ref(queue), std::ref(file_name));
+            std::thread thr(receive, std::ref(queue), std::ref(file_name_primary_data));
 
             thr.join();
             for (unsigned char i = 0; i < NUMBER; ++i) {
@@ -38,9 +39,22 @@ int main(int argc, char *argv[])
             }
         }
 
-        else if (strcmp(argv[1], "read") == 0){
+        else if (strcmp(argv[1], "read_primary") == 0) {
             std::cout << "Content of data.bin:" << std::endl;
-            readbin(file_name);
+            read_primary(file_name_primary_data);
+        }
+
+        else if (strcmp(argv[1], "handling") == 0) {
+            FILE* fp = fopen("data.bin", "rb");
+            if (!fp) {
+                perror("data.bin");
+                return -1;
+            }
+            time_t start = time(NULL);
+            handling(fp); // must create files words.bin and urls.bin
+            time_t end = time(NULL);
+            std::cout << end - start << std::endl;
+            fclose(fp);
         }
     }
     else

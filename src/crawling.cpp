@@ -12,10 +12,11 @@
 #include <regex>
 #include <iterator>
 #include <stdexcept>
-#include "tools.h"
+#include "crawling.h"
 #include "Document.h"
 #include "Node.h"
 #include "thread_queue.h"
+#include "page.h"
 
 struct struct_string {
     char *ptr;
@@ -138,46 +139,6 @@ bool is_in_cycle(std::vector<std::string>& urls)
     return true;
 }
 
-int readbin(std::string& file_name)
-{
-    FILE *fp = fopen(file_name.c_str(), "rb");
-    if (!fp){
-        std::cout << strerror(errno) << std::endl;
-        return -1;
-    }
-
-    struct stat stat_buf;
-    int fd = fileno(fp);
-    fstat(fd, &stat_buf);
-    unsigned long int length = stat_buf.st_size;
-    unsigned long int i = 0;
-
-    size_t len;
-    char*  buffer;
-    
-    while (i < length + 1) {
-
-        if (fread(&len, sizeof(size_t), 1, fp) != 1) {
-            std::cout << strerror(errno) << std::endl;
-        }
-        i += sizeof(size_t);
-
-        buffer = new char [len];
-
-        if (fread(buffer, sizeof(char), len, fp) != len) {
-            std::cout << strerror(errno) << std::endl;
-        }
-        i += sizeof(char) * len;
-
-        std::cout << buffer << std::endl;
-
-        delete buffer;
-    }
-
-    fclose(fp);
-    return 0;
-}
-
 Page parse(std::string& url, std::string& html) {
     CDocument doc;
     doc.parse(html.c_str());
@@ -210,7 +171,7 @@ void provide(Thread_queue<Page>& queue) {
     srand(time(NULL));
     std::string url = base_links[rand() % base_links.size()];
     std::string home_url = url;
-    std::cout << "Fetching " << url << std::endl;
+    // std::cout << "Fetching " << url << std::endl;
 
     std::string html(gethtml(url));
     CDocument doc_1;
@@ -218,6 +179,7 @@ void provide(Thread_queue<Page>& queue) {
     std::vector<std::string> links(doc_1.get_links());
     Page page = parse(url, html);
     queue.push(page);
+    std::cout << "Saved " << url << std::endl;
 
     for (;;) {
         std::cout << std::endl;
@@ -228,11 +190,13 @@ void provide(Thread_queue<Page>& queue) {
         if (url.substr(0, 4) != "http")
             url = home_url + url;
 
-        std::cout << "Fetching " << url << std::endl;
+        // std::cout << "Fetching " << url << std::endl;
 
         html = gethtml(url);
         if (html != "curl_error") {
             page = parse(url, html);
+            queue.push(page);
+            std::cout << "Saved " << url << std::endl;
         }
         else {
             std::cout << "----------------Exception------------" << std::endl;
@@ -240,6 +204,7 @@ void provide(Thread_queue<Page>& queue) {
             html = gethtml(url);
             page = parse(url, html);
             queue.push(page);
+            std::cout << "Saved " << url << std::endl;
         }
 
         CDocument doc;
@@ -254,6 +219,7 @@ void provide(Thread_queue<Page>& queue) {
             links = doc2.get_links();
             page = parse(url, html);
             queue.push(page);
+            std::cout << "Saved " << url << std::endl;
         }
         else
             ;
@@ -271,6 +237,7 @@ void provide(Thread_queue<Page>& queue) {
                 html = gethtml(url);
                 page = parse(url, html);
                 queue.push(page);
+                std::cout << "Saved " << url << std::endl;
             }
 
         }
@@ -282,17 +249,11 @@ void provide(Thread_queue<Page>& queue) {
 size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
     size_t result = 0;
     size_t length;
-    size_t* size_buffer;
-    char* str_buffer;
 
     length = (size_t) str_to_disk.size();
-    size_buffer = &length;
-    result += fwrite(size_buffer, sizeof(size_t), 1, fp);
+    result += fwrite(&length, sizeof(size_t), 1, fp);
 
-    str_buffer = new char [length + 1];
-    strcpy(str_buffer, str_to_disk.c_str());
-    result += fwrite(str_buffer, sizeof(char), length, fp);
-    delete str_buffer;
+    result += fwrite(str_to_disk.c_str(), sizeof(char), length, fp);
 
     return result;
 }
@@ -317,4 +278,60 @@ void receive(Thread_queue<Page>& queue, std::string& file_name) {
         }
 
     fclose(ptr_f);
+}
+
+int read_primary(std::string& file_name)
+{
+    FILE *fp = fopen(file_name.c_str(), "rb");
+    if (!fp){
+        perror("");
+        return -1;
+    }
+
+    struct stat stat_buf;
+    int fd = fileno(fp);
+    fstat(fd, &stat_buf);
+    unsigned long long i = 0;
+    Page page;
+    unsigned char reminder;
+
+    size_t len;
+    char*  buffer;
+    char* str;
+
+    for(unsigned long long j = 0; i < 0.95 * stat_buf.st_size; ++j) {
+        if (fread(&len, sizeof(size_t), 1, fp) != 1) {
+            perror("56");
+            return -1;
+        }
+        i += sizeof(size_t);
+
+        buffer = new char [len];
+        str = new char [len + 1];
+
+        if (fread(buffer, sizeof(char), len, fp) != len) {
+            perror("65");
+            return -1;
+        }
+        i += sizeof(char) * len;
+
+        for (size_t i = 0; i < len; ++i)
+            str[i] = buffer[i];
+        str[len] = '\0';
+
+        reminder = j % 3;
+        switch (reminder) {
+            case 0: page.url = str;
+                    std::cout << str << std::endl;
+            case 1: page.title = str;
+            case 2: page.text = str;
+        }
+
+        delete str;
+        delete buffer;
+    }
+    std::cout << "It has read " << i / 1024 << " kb" << std::endl;
+
+    fclose(fp);
+    return 0;
 }
