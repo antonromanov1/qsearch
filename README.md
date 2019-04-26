@@ -1,6 +1,7 @@
 # qsearch
 
-This project represents a basic multithreaded web crawler which is written in C++.
+This project represents a search engine which consists of a multithreaded web crawler
+which is written in C++ and a handler of the crawled data.
 
 I have edited the C++ gumbo wrapper (https://github.com/lazytiger/gumbo-query).
 

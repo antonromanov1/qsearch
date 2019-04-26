@@ -251,9 +251,9 @@ size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
     size_t length;
 
     length = (size_t) str_to_disk.size();
-    result += fwrite(&length, sizeof(size_t), 1, fp);
+    result += fwrite(&length, sizeof(size_t), 1, fp); // fwrite should return 1
 
-    result += fwrite(str_to_disk.c_str(), sizeof(char), length, fp);
+    result += fwrite(str_to_disk.c_str(), sizeof(char), length, fp); // fwrite should return length
 
     return result;
 }

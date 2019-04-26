@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <cstdlib>
 #include <cctype>
 #include <cstring>
 #include <ctime>
@@ -10,6 +11,7 @@
 #include <algorithm>
 #include <utility>
 #include "page.h"
+#include "crawling.h"
 
 static void remove_duplicates(std::vector<std::string>& arg_vec){
     std::sort(arg_vec.begin(), arg_vec.end());
@@ -83,7 +85,8 @@ static std::vector<std::string> get_words(std::vector<std::string>& input_vector
     return result;
 }
 
-static int write_words(std::map<std::string, std::vector<std::string>>& words, size_t max_length_word) {
+/*
+static int write_words(const std::map<std::string, std::vector<std::string>>& words, size_t max_length_word) {
     FILE* keys = fopen("keys.bin", "wb");
     if (!keys) {
         perror("");
@@ -95,10 +98,54 @@ static int write_words(std::map<std::string, std::vector<std::string>>& words, s
         return -1;
     }
 
+    if (fwrite(&max_length_word, sizeof(size_t), 1, keys) != 1) {
+        perror("");
+        return -1;
+    }
+
+    size_t buffer_size = sizeof(char) * max_length_word;
+    char* buffer = (char*)malloc(buffer_size); // char buffer[max_length_word];
+    unsigned long values_addr = 0;
+    size_t quantity;
+    size_t fwrite_str_ret;
+    for (auto x : words) {
+        memcpy(buffer, x.first.c_str(), x.first.size());
+        for (char* address = buffer + x.first.size(); address != buffer + buffer_size; ++address)
+            *address = '\0';
+
+        if (fwrite(buffer, sizeof(char), buffer_size, keys) != buffer_size) {
+            perror("");
+            return -1;
+        }
+
+        // writing to file "keys.bin" address of urls from values.bin
+        if (fwrite(&values_addr, sizeof(unsigned long), 1, keys) != 1) {
+            perror("");
+            return -1;
+        }
+
+        quantity = x.second.size();
+        if (fwrite(&quantity, sizeof(size_t), 1, values) != 1) {
+            perror("");
+            return -1;
+        }
+        values_addr += (unsigned long)sizeof(size_t);
+
+        for (auto y : x.second)
+            if ((fwrite_str_ret = fwrite_str(y, values)) == 1 + y.size())
+                values_addr += (unsigned long)fwrite_str_ret;
+            else {
+                perror("");
+                return -1;
+            }
+    }
+
+    free(buffer);
     fclose(keys);
     fclose(values);
     return 0;
 }
+*/
 
 int handling(FILE* fp)
 {
@@ -180,6 +227,16 @@ int handling(FILE* fp)
 
         remove_duplicates(x.second);
     }
+
+    std::string input_word;
+    do {
+        std::cout << ">>>";
+        std::cin >> input_word;
+        
+        for (std::string url : words[input_word])
+            std::cout << url << std::endl;
+    } while(input_word != "quit()");
+    // write_words(words, max_length_word);
 
     return 0;
 }
