@@ -14,6 +14,5 @@ bool is_in_cycle(std::vector<std::string>&);
 
 Page parse(std::string&, std::string&);
 void provide(Thread_queue<Page>&);
-size_t fwrite_str(std::string&, FILE*);
 void receive(Thread_queue<Page>&, std::string&);
 int read_primary(std::string&);

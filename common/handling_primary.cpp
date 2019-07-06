@@ -85,7 +85,6 @@ static std::vector<std::string> get_words(std::vector<std::string>& input_vector
     return result;
 }
 
-/*
 static int write_words(const std::map<std::string, std::vector<std::string>>& words, size_t max_length_word) {
     FILE* keys = fopen("keys.bin", "wb");
     if (!keys) {
@@ -98,46 +97,34 @@ static int write_words(const std::map<std::string, std::vector<std::string>>& wo
         return -1;
     }
 
-    if (fwrite(&max_length_word, sizeof(size_t), 1, keys) != 1) {
-        perror("");
-        return -1;
-    }
+    fwrite(&max_length_word, sizeof(size_t), 1, keys);
 
     size_t buffer_size = sizeof(char) * max_length_word;
     char* buffer = (char*)malloc(buffer_size); // char buffer[max_length_word];
     unsigned long values_addr = 0;
-    size_t quantity;
-    size_t fwrite_str_ret;
+    size_t urls_quantity;
     for (auto x : words) {
         memcpy(buffer, x.first.c_str(), x.first.size());
         for (char* address = buffer + x.first.size(); address != buffer + buffer_size; ++address)
             *address = '\0';
 
-        if (fwrite(buffer, sizeof(char), buffer_size, keys) != buffer_size) {
-            perror("");
-            return -1;
-        }
+        fwrite(buffer, sizeof(char), buffer_size, keys);
 
         // writing to file "keys.bin" address of urls from values.bin
-        if (fwrite(&values_addr, sizeof(unsigned long), 1, keys) != 1) {
-            perror("");
-            return -1;
-        }
+        fwrite(&values_addr, sizeof(unsigned long), 1, keys);
 
-        quantity = x.second.size();
-        if (fwrite(&quantity, sizeof(size_t), 1, values) != 1) {
-            perror("");
-            return -1;
-        }
+        urls_quantity = x.second.size();
+        fwrite(&urls_quantity, sizeof(size_t), 1, values);
+
         values_addr += (unsigned long)sizeof(size_t);
 
-        for (auto y : x.second)
-            if ((fwrite_str_ret = fwrite_str(y, values)) == 1 + y.size())
-                values_addr += (unsigned long)fwrite_str_ret;
-            else {
-                perror("");
-                return -1;
-            }
+        for (auto y : x.second) {
+            size_t length_of_url = y.size();
+            fwrite(&length_of_url, sizeof(size_t), 1, values);
+
+            fwrite(y.c_str(), sizeof(char), y.size(), values);
+            values_addr += sizeof(size_t) + y.size();
+        }
     }
 
     free(buffer);
@@ -145,7 +132,6 @@ static int write_words(const std::map<std::string, std::vector<std::string>>& wo
     fclose(values);
     return 0;
 }
-*/
 
 int handling(FILE* fp)
 {
@@ -218,7 +204,7 @@ int handling(FILE* fp)
                 words[x].push_back(elem.url);
     }
     finish = time(NULL);
-    std::cout << "map \"words\" is constructed in " << (finish - start) / 60.0 << std::endl;
+    std::cout << "map \"words\" is constructed in " << (finish - start) / 60.0 << " min" << std::endl;
 
     size_t max_length_word = 0;
     for (auto& x : words) {
@@ -228,15 +214,18 @@ int handling(FILE* fp)
         remove_duplicates(x.second);
     }
 
-    std::string input_word;
-    do {
-        std::cout << ">>>";
-        std::cin >> input_word;
-        
-        for (std::string url : words[input_word])
-            std::cout << url << std::endl;
-    } while(input_word != "quit()");
-    // write_words(words, max_length_word);
+    /*
+    for (auto it = words.begin(); it != words.end(); ++it) {
+        std::cout << "=======================================================================" << std::endl;
+        std::cout << "                " << it->first << std::endl;
+        std::cout << "=======================================================================" << std::endl;
+
+        for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+            std::cout << *it2 << std::endl;
+    }
+    */
+    write_words(words, max_length_word);
+    std::cout << "The system has " << words.size() << " words" << std::endl;
 
     return 0;
 }

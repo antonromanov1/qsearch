@@ -246,7 +246,7 @@ void provide(Thread_queue<Page>& queue) {
     }
 }
 
-size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
+static size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
     size_t result = 0;
     size_t length;
 

@@ -11,6 +11,7 @@
 #include "crawling.h"
 #include "thread_queue.h"
 #include "handling_primary.h"
+#include "search.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,10 +19,11 @@ int main(int argc, char *argv[])
 
     if (argc == 1)
         std::cout << "If you want to crawl the Internet add argument \"crawl\"" <<
-            std::endl << "if you want to read crawled data add argument \"read\"" << std::endl;
+            std::endl << "if you want to read crawled data add argument \"read_primary\"" <<
+            std::endl << "if you want to handle crawled data add argument \"handling\"" << std::endl;
 
-    else if (argc == 2){
-        if (strcmp(argv[1], "crawl") == 0){
+    else if (argc == 2) {
+        if (strcmp(argv[1], "crawl") == 0) {
             Thread_queue<Page> queue;
 
             const unsigned char NUMBER = 1;
@@ -51,12 +53,24 @@ int main(int argc, char *argv[])
                 return -1;
             }
             time_t start = time(NULL);
-            handling(fp); // must create files words.bin and urls.bin
+            handling(fp);
             time_t end = time(NULL);
             std::cout << end - start << std::endl;
             fclose(fp);
         }
+
     }
+
+    else if (argc == 3) {
+        if (strcmp(argv[1], "search") == 0) {
+            std::string word(argv[2]);
+            search(word);
+        }
+
+        else
+            return -1;
+    }
+
     else
         return -1;
 
