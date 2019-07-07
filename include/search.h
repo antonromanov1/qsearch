@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 
-int search(std::string&);
+std::vector<std::string> search(std::string&);

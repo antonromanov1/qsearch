@@ -214,16 +214,6 @@ int handling(FILE* fp)
         remove_duplicates(x.second);
     }
 
-    /*
-    for (auto it = words.begin(); it != words.end(); ++it) {
-        std::cout << "=======================================================================" << std::endl;
-        std::cout << "                " << it->first << std::endl;
-        std::cout << "=======================================================================" << std::endl;
-
-        for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
-            std::cout << *it2 << std::endl;
-    }
-    */
     write_words(words, max_length_word);
     std::cout << "The system has " << words.size() << " words" << std::endl;
 

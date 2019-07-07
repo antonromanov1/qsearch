@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
             time_t start = time(NULL);
             handling(fp);
             time_t end = time(NULL);
-            std::cout << end - start << std::endl;
+            std::cout << end - start << " seconds" << std::endl;
             fclose(fp);
         }
 

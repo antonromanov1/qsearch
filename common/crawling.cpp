@@ -301,7 +301,8 @@ int read_primary(std::string& file_name)
 
     for(unsigned long long j = 0; i < 0.95 * stat_buf.st_size; ++j) {
         if (fread(&len, sizeof(size_t), 1, fp) != 1) {
-            perror("56");
+            perror("");
+            fclose(fp);
             return -1;
         }
         i += sizeof(size_t);
@@ -310,7 +311,8 @@ int read_primary(std::string& file_name)
         str = new char [len + 1];
 
         if (fread(buffer, sizeof(char), len, fp) != len) {
-            perror("65");
+            perror("");
+            fclose(fp);
             return -1;
         }
         i += sizeof(char) * len;
