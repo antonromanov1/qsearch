@@ -19,8 +19,10 @@ int main(int argc, char *argv[])
 
     if (argc == 1)
         std::cout << "If you want to crawl the Internet add argument \"crawl\"" <<
-            std::endl << "if you want to read crawled data add argument \"read_primary\"" <<
-            std::endl << "if you want to handle crawled data add argument \"handling\"" << std::endl;
+        std::endl << "               read crawled data add argument \"read_primary\"" <<
+        std::endl << "               handle crawled data add argument \"handling\"" <<
+        std::endl << "               search your word add argument \"search\" and further <word>" <<
+        std::endl;
 
     else if (argc == 2) {
         if (strcmp(argv[1], "crawl") == 0) {

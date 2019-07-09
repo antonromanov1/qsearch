@@ -108,8 +108,6 @@ LABEL:
         size_t urls_quantity;
         if (fread(&urls_quantity, sizeof(size_t), 1, values) != 1) {
             perror("");
-            fclose(values);
-            fclose(keys);
             exit(-1);
         }
 
@@ -117,16 +115,12 @@ LABEL:
             size_t url_length;
             if (fread(&url_length, sizeof(size_t), 1, values) != 1) {
                 perror("");
-                fclose(values);
-                fclose(keys);
                 exit(-1);
             }
 
             url = new char [url_length + 1];
             if (fread(url, sizeof(char), url_length, values) != url_length) {
                 perror("");
-                fclose(values);
-                fclose(keys);
                 exit(-1);
             }
             url[url_length] = '\0';
@@ -145,6 +139,7 @@ LABEL:
         delete buffer;
         fclose(values);
         fclose(keys);
+        std::cout << "Sorry, the system does not have this word" << std::endl;
         return urls;
     }
 
