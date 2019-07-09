@@ -3,7 +3,7 @@
 QSearch is a search engine which consists of a multithreaded web crawler,
 a handler of the crawled data and a tool for searching.
 
-# Gumbo (a pure-C HTML5 parser) and gumbo-query
+## Gumbo (a pure-C HTML5 parser) and gumbo-query
 
 I have edited a gumbo C++ wrapper gumbo-query (https://github.com/lazytiger/gumbo-query).
 
