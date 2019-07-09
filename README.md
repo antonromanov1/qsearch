@@ -1,4 +1,4 @@
-# qsearch
+# QSearch
 
 QSearch is a search engine which consists of a multithreaded web crawler,
 a handler of the crawled data and a tool for searching.
