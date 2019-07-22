@@ -35,8 +35,8 @@ prepare the system for searching with:
 ./main handling_primary
 ```
 
-and at last search a word with:
+and at last search your query with:
 
 ```bash
-./main search <word>
+./main search <query>
 ```

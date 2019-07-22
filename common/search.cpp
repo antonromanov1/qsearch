@@ -1,6 +1,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <list>
 #include <string>
 #include <iostream>
 #include "search.h"
@@ -35,21 +36,23 @@
 // } (repeated)
 //========================================================================
 
-std::vector<std::string> search(std::string& word) {
-    FILE *keys = fopen("keys.bin", "rb");
+std::list<std::string> search_word(std::string& word) {
+    FILE *keys, *values;
+
+    keys = fopen("keys.bin", "rb");
+    values = fopen("values.bin", "rb");
+
     if (! keys) {
         perror("keys.bin");
+        exit(-1);
+    }
+    if (! values) {
+        perror("values.bin");
         exit(-1);
     }
     struct stat stat_buf;
     int fd = fileno(keys);
     fstat(fd, &stat_buf);
-
-    FILE *values = fopen("values.bin", "rb");
-    if (! values) {
-        perror("values.bin");
-        exit(-1);
-    }
 
     size_t max_length_word;
     char *buffer;
@@ -60,7 +63,8 @@ std::vector<std::string> search(std::string& word) {
         exit(-1);
     }
 
-    buffer = new char [max_length_word];
+    buffer = new char [max_length_word + 1];
+    buffer[max_length_word] = '\0';
 
     // Computing quantity of words
     unsigned long words_quantity = stat_buf.st_size - max_length_word;
@@ -99,7 +103,7 @@ std::vector<std::string> search(std::string& word) {
     }
 
 LABEL:
-    std::vector<std::string> urls;
+    std::list<std::string> urls;
     char *url;
 
     if (flag == 1) {
@@ -124,7 +128,7 @@ LABEL:
                 exit(-1);
             }
             url[url_length] = '\0';
-            std::cout << url << std::endl;
+            // std::cout << url << std::endl;
 
             urls.push_back(url);
             delete url;
@@ -139,9 +143,48 @@ LABEL:
         delete buffer;
         fclose(values);
         fclose(keys);
-        std::cout << "Sorry, the system does not have this word" << std::endl;
+        std::cout << "Sorry, the system does not have word " << word <<
+            std::endl;
         return urls;
     }
 
     exit(0);
+}
+
+std::list<std::string> search(size_t length, char **words) {
+    if (length == 0)
+        return std::list<std::string>();
+
+    std::string word(words[0]);
+    std::list<std::string> first_urls = search_word(word);
+    std::list<std::string> urls;
+
+    if (length == 1)
+        return first_urls;
+
+    for (size_t i = 1; i < length; ++i) {
+        word = words[i];
+        urls = search_word(word);
+        if (urls.empty())
+            return std::list<std::string>();
+
+        for (auto iter1 = first_urls.begin(); iter1 != first_urls.end();
+                ++iter1){
+
+            std::string check_url = *iter1;
+            int flag = 0;
+
+            for (auto iter2 = urls.begin(); iter2 != urls.end(); ++iter2) {
+                if (*iter2 == check_url)
+                    flag = 1;
+            }
+
+            if (flag == 0)
+                iter1 = first_urls.erase(iter1);
+
+            // ++iter1;
+        }
+    }
+
+    return first_urls;
 }

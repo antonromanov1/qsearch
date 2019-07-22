@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vector>
+#include <list>
 #include <string>
 
-std::vector<std::string> search(std::string&);
+std::list<std::string> search_word(std::string&);
+std::list<std::string> search(size_t, char**);

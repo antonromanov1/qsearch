@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <list>
 #include <stdexcept>
 #include <thread>
 #include <functional>
@@ -63,10 +64,13 @@ int main(int argc, char *argv[])
 
     }
 
-    else if (argc == 3) {
+    else if (argc >= 3) {
         if (strcmp(argv[1], "search") == 0) {
-            std::string word(argv[2]);
-            search(word);
+            std::list<std::string> urls = search(argc - 2, argv + 2);
+
+            std::cout << urls.size() << " results" << std::endl << std::endl;
+            for (auto x : urls)
+                std::cout << x << std::endl;
         }
 
         else

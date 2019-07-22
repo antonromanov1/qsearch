@@ -12,3 +12,6 @@ $(P):
 
 clean:
 	rm $(P)
+
+web:
+	$(CC) $(CFLAGS) $(HEADERS) common/search.cpp ui/response.cpp -o /var/www/cgi-bin/response.cgi -lcgicc
