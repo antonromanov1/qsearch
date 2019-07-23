@@ -12,11 +12,12 @@
 #include <regex>
 #include <iterator>
 #include <stdexcept>
+#include <mutex>
 #include "crawling.h"
 #include "Document.h"
 #include "Node.h"
-#include "thread_queue.h"
-#include "page.h"
+
+extern std::mutex mutex;
 
 struct struct_string {
     char *ptr;
@@ -159,7 +160,37 @@ Page parse(std::string& url, std::string& html) {
     return page;
 }
 
-void provide(Thread_queue<Page>& queue) {
+static size_t fwrite_str(const std::string& str_to_disk, FILE* fp) {
+    size_t result = 0;
+    size_t length;
+
+    length = (size_t) str_to_disk.size();
+    result += fwrite(&length, sizeof(size_t), 1, fp); // fwrite should return 1
+
+    result += fwrite(str_to_disk.c_str(), sizeof(char), length, fp); // fwrite should return length
+
+    return result;
+}
+
+static void write_page(const Page& page, std::string& file_name) {
+    FILE * fp = fopen(file_name.c_str(), "ab");
+    if (! fp) {
+        std::cout << strerror(errno) << std::endl;
+        exit(-1);
+    }
+
+    mutex.lock();
+
+    fwrite_str(page.url, fp);
+    fwrite_str(page.title, fp);
+    fwrite_str(page.text, fp);
+
+    mutex.unlock();
+
+    fclose(fp);
+}
+
+void walk_internet(std::string file_name) {
     std::vector<std::string> base_links;
     base_links.push_back("https://www.theguardian.com/international");
     base_links.push_back("https://www.nbcnews.com/");
@@ -171,14 +202,13 @@ void provide(Thread_queue<Page>& queue) {
     srand(time(NULL));
     std::string url = base_links[rand() % base_links.size()];
     std::string home_url = url;
-    // std::cout << "Fetching " << url << std::endl;
 
     std::string html(gethtml(url));
     CDocument doc_1;
     doc_1.parse(html.c_str());
     std::vector<std::string> links(doc_1.get_links());
     Page page = parse(url, html);
-    queue.push(page);
+    write_page(page, file_name);
     std::cout << "Saved " << url << std::endl;
 
     for (;;) {
@@ -190,12 +220,10 @@ void provide(Thread_queue<Page>& queue) {
         if (url.substr(0, 4) != "http")
             url = home_url + url;
 
-        // std::cout << "Fetching " << url << std::endl;
-
         html = gethtml(url);
         if (html != "curl_error") {
             page = parse(url, html);
-            queue.push(page);
+            write_page(page, file_name);
             std::cout << "Saved " << url << std::endl;
         }
         else {
@@ -203,7 +231,7 @@ void provide(Thread_queue<Page>& queue) {
             url = base_links[rand() % base_links.size()];
             html = gethtml(url);
             page = parse(url, html);
-            queue.push(page);
+            write_page(page, file_name);
             std::cout << "Saved " << url << std::endl;
         }
 
@@ -218,7 +246,7 @@ void provide(Thread_queue<Page>& queue) {
             doc2.parse(html.c_str());
             links = doc2.get_links();
             page = parse(url, html);
-            queue.push(page);
+            write_page(page, file_name);
             std::cout << "Saved " << url << std::endl;
         }
         else
@@ -236,7 +264,7 @@ void provide(Thread_queue<Page>& queue) {
                 url = base_links[rand() % base_links.size()];
                 html = gethtml(url);
                 page = parse(url, html);
-                queue.push(page);
+                write_page(page, file_name);
                 std::cout << "Saved " << url << std::endl;
             }
 
@@ -244,40 +272,6 @@ void provide(Thread_queue<Page>& queue) {
 
         home_url = url;
     }
-}
-
-static size_t fwrite_str(std::string& str_to_disk, FILE* fp) {
-    size_t result = 0;
-    size_t length;
-
-    length = (size_t) str_to_disk.size();
-    result += fwrite(&length, sizeof(size_t), 1, fp); // fwrite should return 1
-
-    result += fwrite(str_to_disk.c_str(), sizeof(char), length, fp); // fwrite should return length
-
-    return result;
-}
-
-void receive(Thread_queue<Page>& queue, std::string& file_name) {
-    FILE * ptr_f = fopen(file_name.c_str(), "wb");
-    if (!ptr_f) {
-        std::cout << strerror(errno) << std::endl;
-    }
-
-    for (;;)
-        if (queue.not_empty()) {
-            Page page(queue.front());
-            queue.pop();
-
-            if (fwrite_str(page.url, ptr_f) != 1 + page.url.size())
-                perror("");
-            if (fwrite_str(page.title, ptr_f) != 1 + page.title.size())
-                perror("");
-            if (fwrite_str(page.text, ptr_f) != 1 + page.text.size())
-                perror("");
-        }
-
-    fclose(ptr_f);
 }
 
 int read_primary(std::string& file_name)
