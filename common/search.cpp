@@ -168,8 +168,7 @@ std::list<std::string> search(size_t length, char **words) {
         if (urls.empty())
             return std::list<std::string>();
 
-        for (auto iter1 = first_urls.begin(); iter1 != first_urls.end();
-                ++iter1){
+        for (auto iter1 = first_urls.begin(); iter1 != first_urls.end(); ) {
 
             std::string check_url = *iter1;
             int flag = 0;
@@ -181,8 +180,8 @@ std::list<std::string> search(size_t length, char **words) {
 
             if (flag == 0)
                 iter1 = first_urls.erase(iter1);
-
-            // ++iter1;
+            else
+                ++iter1;
         }
     }
 
