@@ -8,11 +8,13 @@
 #include <list>
 #include <stdexcept>
 #include <thread>
+#include <mutex>
 #include <functional>
 #include "crawling.h"
-#include "thread_queue.h"
 #include "handling_primary.h"
 #include "search.h"
+
+std::mutex mutex;
 
 int main(int argc, char *argv[])
 {
@@ -22,22 +24,17 @@ int main(int argc, char *argv[])
         std::cout << "If you want to crawl the Internet add argument \"crawl\"" <<
         std::endl << "               read crawled data add argument \"read_primary\"" <<
         std::endl << "               handle crawled data add argument \"handling\"" <<
-        std::endl << "               search your word add argument \"search\" and further <word>" <<
+        std::endl << "               search your word add argument \"search\" and further <query>" <<
         std::endl;
 
     else if (argc == 2) {
         if (strcmp(argv[1], "crawl") == 0) {
-            Thread_queue<Page> queue;
-
             const unsigned char NUMBER = 1;
             std::thread* threads[NUMBER];
 
-            for (unsigned char i = 0; i < NUMBER; ++i) {
-                threads[i] = new std::thread(provide, std::ref(queue));
-            }
-            std::thread thr(receive, std::ref(queue), std::ref(file_name_primary_data));
+            for (unsigned char i = 0; i < NUMBER; ++i)
+                threads[i] = new std::thread(walk_internet, file_name_primary_data);
 
-            thr.join();
             for (unsigned char i = 0; i < NUMBER; ++i) {
                 threads[i]->join();
                 delete threads[i];

@@ -3,8 +3,12 @@
 #include <string>
 #include <vector>
 #include <queue>
-#include "thread_queue.h"
-#include "page.h"
+
+struct Page {
+    std::string url;
+    std::string title;
+    std::string text;
+};
 
 std::string gethtml(const std::string&);
 
@@ -13,6 +17,5 @@ bool are_do_equal(std::vector<std::string>&);
 bool is_in_cycle(std::vector<std::string>&);
 
 Page parse(std::string&, std::string&);
-void provide(Thread_queue<Page>&);
-void receive(Thread_queue<Page>&, std::string&);
+void walk_internet(std::string);
 int read_primary(std::string&);

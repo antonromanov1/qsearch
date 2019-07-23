@@ -10,7 +10,6 @@
 #include <map>
 #include <algorithm>
 #include <utility>
-#include "page.h"
 #include "crawling.h"
 
 static void remove_duplicates(std::vector<std::string>& arg_vec){
