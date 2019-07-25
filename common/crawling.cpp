@@ -62,7 +62,6 @@ std::string gethtml(const std::string& url)
     long expected_code = 200.0;
     std::string message("curl_error");
     CURL *curl;
-    //CURLcode res;
     struct struct_string s;
 
     curl = curl_easy_init();
@@ -211,10 +210,9 @@ void walk_internet(std::string file_name, size_t thread_index) {
     std::vector<std::string> links(doc_1.get_links());
     Page page = parse(url, html);
     write_page(page, file_name);
-    THREAD_OUTPUT // std::cout << "Thread " << thread_index << " - saved " << url << std::endl;
+    THREAD_OUTPUT
 
     for (;;) {
-        // std::cout << std::endl;
         vector_of_links.push_back(url);
 
         url = links[rand() % links.size()];
@@ -226,7 +224,7 @@ void walk_internet(std::string file_name, size_t thread_index) {
         if (html != "curl_error") {
             page = parse(url, html);
             write_page(page, file_name);
-            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT
         }
         else {
             std::cout << "----------------Exception------------" << std::endl;
@@ -234,7 +232,7 @@ void walk_internet(std::string file_name, size_t thread_index) {
             html = gethtml(url);
             page = parse(url, html);
             write_page(page, file_name);
-            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT
         }
 
         CDocument doc;
@@ -249,7 +247,7 @@ void walk_internet(std::string file_name, size_t thread_index) {
             links = doc2.get_links();
             page = parse(url, html);
             write_page(page, file_name);
-            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT
         }
         else
             ;
@@ -267,7 +265,7 @@ void walk_internet(std::string file_name, size_t thread_index) {
                 html = gethtml(url);
                 page = parse(url, html);
                 write_page(page, file_name);
-                THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
+                THREAD_OUTPUT
             }
 
         }
