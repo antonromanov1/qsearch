@@ -32,11 +32,11 @@ run the crawler with:
 prepare the system for searching with:
 
 ```bash
-./main handling_primary
+./main handling
 ```
 
 and at last search your query with:
 
 ```bash
-./main search <query>
+./main search what the weather for tomorrow
 ```
