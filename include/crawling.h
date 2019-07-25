@@ -17,5 +17,5 @@ bool are_do_equal(std::vector<std::string>&);
 bool is_in_cycle(std::vector<std::string>&);
 
 Page parse(std::string&, std::string&);
-void walk_internet(std::string);
+void walk_internet(std::string, size_t);
 int read_primary(std::string&);

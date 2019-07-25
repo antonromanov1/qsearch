@@ -17,6 +17,8 @@
 #include "Document.h"
 #include "Node.h"
 
+#define THREAD_OUTPUT std::cout << "Thread " << thread_index << " - saved " << url << std::endl;
+
 extern std::mutex mutex;
 
 struct struct_string {
@@ -190,7 +192,7 @@ static void write_page(const Page& page, std::string& file_name) {
     fclose(fp);
 }
 
-void walk_internet(std::string file_name) {
+void walk_internet(std::string file_name, size_t thread_index) {
     std::vector<std::string> base_links;
     base_links.push_back("https://www.theguardian.com/international");
     base_links.push_back("https://www.nbcnews.com/");
@@ -209,10 +211,10 @@ void walk_internet(std::string file_name) {
     std::vector<std::string> links(doc_1.get_links());
     Page page = parse(url, html);
     write_page(page, file_name);
-    std::cout << "Saved " << url << std::endl;
+    THREAD_OUTPUT // std::cout << "Thread " << thread_index << " - saved " << url << std::endl;
 
     for (;;) {
-        std::cout << std::endl;
+        // std::cout << std::endl;
         vector_of_links.push_back(url);
 
         url = links[rand() % links.size()];
@@ -224,7 +226,7 @@ void walk_internet(std::string file_name) {
         if (html != "curl_error") {
             page = parse(url, html);
             write_page(page, file_name);
-            std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
         }
         else {
             std::cout << "----------------Exception------------" << std::endl;
@@ -232,7 +234,7 @@ void walk_internet(std::string file_name) {
             html = gethtml(url);
             page = parse(url, html);
             write_page(page, file_name);
-            std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
         }
 
         CDocument doc;
@@ -247,7 +249,7 @@ void walk_internet(std::string file_name) {
             links = doc2.get_links();
             page = parse(url, html);
             write_page(page, file_name);
-            std::cout << "Saved " << url << std::endl;
+            THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
         }
         else
             ;
@@ -265,7 +267,7 @@ void walk_internet(std::string file_name) {
                 html = gethtml(url);
                 page = parse(url, html);
                 write_page(page, file_name);
-                std::cout << "Saved " << url << std::endl;
+                THREAD_OUTPUT // std::cout << "Saved " << url << std::endl;
             }
 
         }

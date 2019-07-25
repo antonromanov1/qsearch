@@ -29,13 +29,13 @@ int main(int argc, char *argv[])
 
     else if (argc == 2) {
         if (strcmp(argv[1], "crawl") == 0) {
-            const unsigned char NUMBER = 1;
+            const size_t NUMBER = 5;
             std::thread* threads[NUMBER];
 
-            for (unsigned char i = 0; i < NUMBER; ++i)
-                threads[i] = new std::thread(walk_internet, file_name_primary_data);
+            for (size_t i = 0; i < NUMBER; ++i)
+                threads[i] = new std::thread(walk_internet, file_name_primary_data, i);
 
-            for (unsigned char i = 0; i < NUMBER; ++i) {
+            for (size_t i = 0; i < NUMBER; ++i) {
                 threads[i]->join();
                 delete threads[i];
             }
