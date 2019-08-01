@@ -9,12 +9,12 @@ I have edited a gumbo C++ wrapper gumbo-query (https://github.com/lazytiger/gumb
 
 Changes I made are below:
 
-   1. Added function search_for_links (copied and modified from gumbo-parser/examples
+   1. Added function `search_for_links` (copied and modified from gumbo-parser/examples
    https://github.com/google/gumbo-parser)
-   2. Added member function CDocument::get_links
+   2. Added member function `CDocument::get_links`
    3. Edited destructor of CObject and member function CObject::release
    4. Added member function CSelection::results
-   5. Added member function CDocument::page_text
+   5. Added member function `CDocument::page_text`
 
 # How to use it
 You can build QSearch with:
