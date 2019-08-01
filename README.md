@@ -41,5 +41,5 @@ and at last search your query with:
 ./main search what the weather for tomorrow
 ```
 
-# An extension for Python
+# The extension for Python
 You can build my extension in `py_extension/` and then use resulting binary for calling in your user interface
