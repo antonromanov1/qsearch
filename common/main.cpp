@@ -8,13 +8,10 @@
 #include <list>
 #include <stdexcept>
 #include <thread>
-#include <mutex>
 #include <functional>
 #include "crawling.h"
 #include "handling_primary.h"
 #include "search.h"
-
-std::mutex mutex;
 
 int main(int argc, char *argv[])
 {

@@ -19,9 +19,9 @@
 
 #define THREAD_OUTPUT std::cout << "Thread " << thread_index << " - saved " << url << std::endl;
 
-extern std::mutex mutex;
-
 namespace qsearch {
+
+std::mutex mutex;
 
 struct struct_string {
     char *ptr;
