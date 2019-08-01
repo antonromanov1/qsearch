@@ -12,6 +12,8 @@
 #include <utility>
 #include "crawling.h"
 
+namespace qsearch {
+
 static void remove_duplicates(std::vector<std::string>& arg_vec){
     std::sort(arg_vec.begin(), arg_vec.end());
     arg_vec.erase(std::unique(arg_vec.begin(), arg_vec.end()), arg_vec.end());
@@ -218,3 +220,5 @@ int handling(FILE* fp)
 
     return 0;
 }
+
+} // namespace

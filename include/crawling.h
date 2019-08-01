@@ -4,6 +4,8 @@
 #include <vector>
 #include <queue>
 
+namespace qsearch {
+
 struct Page {
     std::string url;
     std::string title;
@@ -19,3 +21,5 @@ bool is_in_cycle(std::vector<std::string>&);
 Page parse(std::string&, std::string&);
 void walk_internet(std::string, size_t);
 int read_primary(std::string&);
+
+}

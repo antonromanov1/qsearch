@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
             std::thread* threads[NUMBER];
 
             for (size_t i = 0; i < NUMBER; ++i)
-                threads[i] = new std::thread(walk_internet, file_name_primary_data, i);
+                threads[i] = new std::thread(qsearch::walk_internet, file_name_primary_data, i);
 
             for (size_t i = 0; i < NUMBER; ++i) {
                 threads[i]->join();
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
         else if (strcmp(argv[1], "read_primary") == 0) {
             std::cout << "Content of data.bin:" << std::endl;
-            read_primary(file_name_primary_data);
+            qsearch::read_primary(file_name_primary_data);
         }
 
         else if (strcmp(argv[1], "handling") == 0) {
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
                 return -1;
             }
             time_t start = time(NULL);
-            handling(fp);
+            qsearch::handling(fp);
             time_t end = time(NULL);
             std::cout << end - start << " seconds" << std::endl;
             fclose(fp);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
     else if (argc >= 3) {
         if (strcmp(argv[1], "search") == 0) {
-            std::list<std::string> urls = search(argc - 2, argv + 2);
+            std::list<std::string> urls = qsearch::search(argc - 2, argv + 2);
 
             std::cout << urls.size() << " results" << std::endl << std::endl;
             for (auto x : urls)

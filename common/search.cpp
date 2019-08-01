@@ -36,11 +36,13 @@
 // } (repeated)
 //========================================================================
 
+namespace qsearch {
+
 std::list<std::string> search_word(std::string& word) {
     FILE *keys, *values;
 
-    keys = fopen("keys.bin", "rb");
-    values = fopen("values.bin", "rb");
+    keys = fopen("/home/anton/projects/qsearch/keys.bin", "rb");
+    values = fopen("/home/anton/projects/qsearch/values.bin", "rb");
 
     if (! keys) {
         perror("keys.bin");
@@ -187,3 +189,5 @@ std::list<std::string> search(size_t length, char **words) {
 
     return first_urls;
 }
+
+} // namespace

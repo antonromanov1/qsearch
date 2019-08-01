@@ -21,6 +21,8 @@
 
 extern std::mutex mutex;
 
+namespace qsearch {
+
 struct struct_string {
     char *ptr;
     size_t len;
@@ -331,3 +333,5 @@ int read_primary(std::string& file_name)
     fclose(fp);
     return 0;
 }
+
+} // namespace
