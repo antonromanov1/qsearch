@@ -8,11 +8,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <functional>
 #include <regex>
 #include <iterator>
 #include <stdexcept>
 #include <mutex>
+#include <utility>
 #include "crawling.h"
 #include "Document.h"
 #include "Node.h"
@@ -214,7 +214,7 @@ void walk_internet(std::string file_name, size_t thread_index) {
     THREAD_OUTPUT
 
     for (;;) {
-        vector_of_links.push_back(url);
+        vector_of_links.push_back(std::move(url));
 
         url = links[rand() % links.size()];
 
