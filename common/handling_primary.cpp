@@ -75,6 +75,9 @@ static void clean_word(std::string& word) {
 }
 
 static std::vector<std::string> get_words(std::vector<std::string>& input_vector) {
+    // get_words() gets vector of strings and returns
+    // vector of strings which are only words (english words)
+
     std::vector<std::string> result;
     std::string::size_type i;
 
@@ -86,7 +89,7 @@ static std::vector<std::string> get_words(std::vector<std::string>& input_vector
             ++i;
 
         if ((x.size() == i) && (i != 0))
-            result.push_back(x);
+            result.push_back(std::move(x));
     }
 
     return result;
@@ -187,7 +190,7 @@ int handling(FILE* fp)
         }
 
         if (remainder == 2)
-            pages.push_back(page);
+            pages.push_back(std::move(page));
 
         delete str;
         delete buffer;
