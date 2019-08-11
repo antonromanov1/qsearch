@@ -25,45 +25,51 @@ static std::vector<std::string> split(const std::string& input_str, const char d
     std::string s;
 
     while (getline(f, s, delim))
-        strings.push_back(s);
+        strings.push_back(std::move(s));
 
     return strings;
 }
 
-static void clean_word(std::string& x) {
-    std::string::size_type len = x.size();
+static void clean_word(std::string& word) {
+    // This function deletes unnecessary signs from string
+    // and lows each character if necessary
+    // Examples:
+    // Trump's -> trump
+    // spying', -> spying
+
+    auto len = word.size();
     
     // deleting apostrophe which is not in ascii and letter 's' from the end of the word
     const char apost[] = "’s";
     if ((len > strlen(apost)))
-        if (x.substr(len - strlen(apost), len) == apost) {
-            x.erase(len - strlen(apost), len);
-            len = x.size();
+        if (word.substr(len - strlen(apost), len) == apost) {
+            word.erase(len - strlen(apost), len);
+            len = word.size();
         }
 
     std::string sub;
     if (len > 2) {
-        sub = x.substr(len - 2, len);
+        sub = word.substr(len - 2, len);
         if ((sub == "\'s") || (sub == "\',")) {    // cases such as "Ecuador\'s" or "spying\',"
-            x.erase(len - 2, len);
-            len = x.size();
+            word.erase(len - 2, len);
+            len = word.size();
         }
     }
 
     // deleting last character if it is a punctuation sign
-    char temp = *(x.end() - 1);
+    char temp = *(word.end() - 1);
     if (ispunct(temp))
-        x.erase(len - 1);
+        word.erase(len - 1);
 
     // the same with first character
-    temp = *x.begin();
+    temp = *word.begin();
     if (ispunct(temp)) {
-        x.erase(x.begin());
-        temp = *x.begin();
+        word.erase(word.begin());
+        temp = *word.begin();
     }
 
     // lowering each symbol if needed
-    for (auto iter = x.begin(); iter != x.end(); ++iter)
+    for (auto iter = word.begin(); iter != word.end(); ++iter)
         if (isupper(*iter))
             *iter = tolower(*iter);
 }
