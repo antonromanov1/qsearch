@@ -146,7 +146,6 @@ bool is_in_cycle(std::vector<std::string>& urls)
 Page parse(std::string& url, std::string& html) {
     CDocument doc;
     doc.parse(html.c_str());
-    std::vector<std::string> links = doc.get_links();
 
     CSelection c = doc.find("title");
     std::string title;
