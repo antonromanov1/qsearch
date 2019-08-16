@@ -320,8 +320,11 @@ int read_primary(std::string& file_name)
         switch (reminder) {
             case 0: page.url = str;
                     std::cout << str << std::endl;
+                    break;
             case 1: page.title = str;
+                    break;
             case 2: page.text = str;
+                    break;
         }
 
         delete str;
