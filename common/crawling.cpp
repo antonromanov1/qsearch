@@ -42,7 +42,7 @@ void init_struct_string(struct_string *s) {
 
 size_t writefunc(void *ptr, size_t size, size_t nmemb, struct struct_string *s)
 {
-    size_t new_len = s->len + size*nmemb;
+    size_t new_len = s->len + size * nmemb;
     void* ptr2 = realloc(s->ptr, new_len + 1);
 
     if (ptr2 == NULL) {
